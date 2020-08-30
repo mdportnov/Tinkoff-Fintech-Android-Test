@@ -20,7 +20,7 @@ import com.example.fintechapp.OkHttpRequest
 import com.example.fintechapp.R
 import com.example.fintechapp.Utils
 import com.example.fintechapp.databinding.FragmentTabRandomBinding
-import com.example.fintechapp.viewModel.PostViewModel
+import com.example.fintechapp.viewModel.RandomPostViewModel
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.OkHttpClient
@@ -33,7 +33,7 @@ class TabRandomFragment : Fragment(), FetchCompleteListener {
     private val binding get() = _binding!!
     var jsonString = ""
     private var mContext: Context? = null
-    private lateinit var postViewModel: PostViewModel
+    private lateinit var postViewModel: RandomPostViewModel
 
     private var currentPointer: Int = 0
 
@@ -47,13 +47,14 @@ class TabRandomFragment : Fragment(), FetchCompleteListener {
         val view = binding.root
 
         initListeners()
-        postViewModel = ViewModelProvider(this).get(PostViewModel::class.java)
+        postViewModel = ViewModelProvider(this).get(RandomPostViewModel::class.java)
 
         currentPointer = postViewModel.getSize(context!!)
 
         if (currentPointer == 0) {
-            getPostFromAPI()
             binding.backBtn.setImageDrawable(resources.getDrawable(R.drawable.ic_round_replay_24_inactive))
+            binding.backBtn.isClickable=false
+            getPostFromAPI()
             ++currentPointer
         } else {
             getPostFromDB(currentPointer)

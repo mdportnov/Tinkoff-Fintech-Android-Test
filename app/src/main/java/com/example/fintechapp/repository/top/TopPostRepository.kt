@@ -1,4 +1,4 @@
-package com.example.fintechapp.repository
+package com.example.fintechapp.repository.top
 
 import android.content.Context
 import com.example.fintechapp.model.Post
@@ -6,12 +6,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.launch
 
-class PostRepository {
+class TopPostRepository {
     companion object {
-        var postDatabase: PostDatabase? = null
+        private var postDatabase: TopPostDatabase? = null
 
-        fun initDB(context: Context): PostDatabase {
-            return PostDatabase.getDatabaseClient(context)
+        fun initDB(context: Context): TopPostDatabase {
+            return TopPostDatabase.getDatabaseClient(context)
         }
 
         fun insertData(context: Context, newPost: Post) {

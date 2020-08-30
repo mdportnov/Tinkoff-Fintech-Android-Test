@@ -4,7 +4,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.example.fintechapp.Utils
 
-@Entity(tableName = Utils.DB_NAME)
+@Entity(tableName = Utils.DB_RANDOM_NAME)
 data class Post(
     @PrimaryKey(autoGenerate = true)
     val DBid: Long = 0,

@@ -1,4 +1,4 @@
-package com.example.fintechapp.repository
+package com.example.fintechapp.repository.random
 
 import android.content.Context
 import androidx.room.Database
@@ -6,24 +6,25 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.example.fintechapp.Utils
 import com.example.fintechapp.model.Post
+import com.example.fintechapp.repository.PostDAO
 
 @Database(entities = [Post::class], version = 1)
-abstract class PostDatabase : RoomDatabase() {
+abstract class RandomPostDatabase : RoomDatabase() {
 
     abstract fun postDao() : PostDAO
 
     companion object {
         @Volatile
-        private var INSTANCE: PostDatabase? = null
+        private var INSTANCE: RandomPostDatabase? = null
 
-        fun getDatabaseClient(context: Context) : PostDatabase {
+        fun getDatabaseClient(context: Context) : RandomPostDatabase {
             if (INSTANCE != null) return INSTANCE!!
 
             synchronized(this) {
                 INSTANCE = Room
-                    .databaseBuilder(context, PostDatabase::class.java, Utils.DB_NAME)
+                    .databaseBuilder(context, RandomPostDatabase::class.java, Utils.DB_RANDOM_NAME)
                     .fallbackToDestructiveMigration()
-                    .allowMainThreadQueries() // !!!!!!!!!!!!!!!!!
+                    .allowMainThreadQueries()
                     .build()
                 return INSTANCE!!
             }

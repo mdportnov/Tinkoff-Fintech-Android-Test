@@ -2,9 +2,7 @@ package com.example.fintechapp.fragments
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,8 +17,8 @@ import com.example.fintechapp.FetchCompleteListener
 import com.example.fintechapp.OkHttpRequest
 import com.example.fintechapp.R
 import com.example.fintechapp.Utils
-import com.example.fintechapp.databinding.FragmentTabRandomBinding
-import com.example.fintechapp.viewModel.PostViewModel
+import com.example.fintechapp.databinding.FragmentTabLatestBinding
+import com.example.fintechapp.viewModel.LatestPostViewModel
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.OkHttpClient
@@ -29,11 +27,11 @@ import java.io.IOException
 
 @SuppressLint("UseCompatLoadingForDrawables")
 class TabLatestFragment : Fragment(), FetchCompleteListener {
-    private var _binding: FragmentTabRandomBinding? = null
+    private var _binding: FragmentTabLatestBinding? = null
     private val binding get() = _binding!!
     var jsonString = ""
     private var mContext: Context? = null
-    private lateinit var postViewModel: PostViewModel
+    private lateinit var postViewModel: LatestPostViewModel
 
     private var currentPointer: Int = 0
     private var currentPageOnAPI = 0
@@ -44,21 +42,16 @@ class TabLatestFragment : Fragment(), FetchCompleteListener {
         savedInstanceState: Bundle?
     ): View? {
         mContext = activity!!.applicationContext
-        _binding = FragmentTabRandomBinding.inflate(inflater, container, false)
+        _binding = FragmentTabLatestBinding.inflate(inflater, container, false)
         val view = binding.root
 
         initListeners()
-        postViewModel = ViewModelProvider(this).get(PostViewModel::class.java)
+        postViewModel = ViewModelProvider(this).get(LatestPostViewModel::class.java)
+        currentPointer = 0
 
-        currentPointer = postViewModel.getSize(context!!)
-
-        if (currentPointer == 0) {
-            getPostFromAPI()
-            binding.backBtn.setImageDrawable(resources.getDrawable(R.drawable.ic_round_replay_24_inactive))
-            ++currentPointer
-        } else {
-            getPostFromDB(currentPointer)
-        }
+        getPostFromAPI()
+        binding.backBtn.setImageDrawable(resources.getDrawable(R.drawable.ic_round_replay_24_inactive))
+        ++currentPointer
 
         return view
     }
@@ -69,24 +62,41 @@ class TabLatestFragment : Fragment(), FetchCompleteListener {
                 .duration(500)
                 .playOn(binding.nextBtn);
 
-            if (currentPointer >= 1) {
-                binding.backBtn.isClickable = true
-                binding.backBtn.setImageDrawable(resources.getDrawable(R.drawable.ic_round_replay_24))
+            when {
+                currentPointer < 5 -> {
+                    binding.backBtn.isClickable = true
+                    binding.backBtn.setImageDrawable(resources.getDrawable(R.drawable.ic_round_replay_24))
+
+                    binding.nextBtn.isClickable = true
+                    binding.nextBtn.setImageDrawable(resources.getDrawable(R.drawable.ic_baseline_arrow_forward_24))
+
+                    if (currentPointer == postViewModel.getSize(mContext!!)) {
+                        ++currentPointer
+                        getPostFromAPI()
+                    } else {
+                        getPostFromDB(++currentPointer)
+                    }
+
+                    if (currentPointer == 5) {
+                        binding.nextBtn.isClickable = false
+                        binding.nextBtn.setImageDrawable(resources.getDrawable(R.drawable.ic_baseline_arrow_forward_24_inactive))
+                    }
+                }
+
+                currentPointer == 1 -> {
+                    binding.nextBtn.isClickable = true
+                    binding.nextBtn.setImageDrawable(resources.getDrawable(R.drawable.ic_baseline_arrow_forward_24))
+                }
             }
-            if (currentPointer >= postViewModel.getSize(mContext!!)) {
-                ++currentPointer
-                getPostFromAPI()
-            } else {
-                getPostFromDB(++currentPointer)
-            }
+
             println("Your Current Position: $currentPointer ")
         }
 
         binding.backBtn.setOnClickListener() {
-//            var list: List<Post?>? = postViewModel.getAllPosts(mContext!!)
-//            list?.forEach {
-//                println(it.toString())
-//            }
+            if (currentPointer < 5) {
+                binding.nextBtn.isClickable = true
+                binding.nextBtn.setImageDrawable(resources.getDrawable(R.drawable.ic_baseline_arrow_forward_24))
+            }
             YoYo.with(Techniques.RotateOut)
                 .duration(400)
                 .playOn(binding.backBtn);
@@ -97,28 +107,7 @@ class TabLatestFragment : Fragment(), FetchCompleteListener {
             getPrevPost()
         }
 
-        binding.delBtn.setOnClickListener() {
-            println("\nSize of DB: ${postViewModel.getSize(mContext!!)} element")
-            postViewModel.deleteAllPosts(mContext!!)
-            postViewModel.resetAI(mContext!!)
 
-            YoYo.with(Techniques.Pulse)
-                .duration(400)
-                .playOn(binding.delBtn);
-
-
-            Handler().post(Runnable { // Рестарт активности при удалении Базы Данных
-                val intent = activity!!.intent
-                intent.addFlags(
-                    Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
-                            or Intent.FLAG_ACTIVITY_NO_ANIMATION
-                )
-                activity!!.overridePendingTransition(0, 0)
-                activity!!.finish()
-                activity!!.overridePendingTransition(0, 0)
-                startActivity(intent)
-            })
-        }
     }
 
     private fun getPostFromAPI() {
@@ -126,7 +115,7 @@ class TabLatestFragment : Fragment(), FetchCompleteListener {
 
         val request = OkHttpRequest(client)
 
-        request.GET(Utils.url + "top/${currentPageOnAPI}?json=true", object : Callback {
+        request.GET(Utils.url + "latest/${currentPageOnAPI}?json=true", object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 e.printStackTrace()
             }
@@ -157,7 +146,6 @@ class TabLatestFragment : Fragment(), FetchCompleteListener {
         circularProgressDrawable.centerRadius = 30f
         circularProgressDrawable.start()
 
-        println("\n Getting post: \n ${postViewModel.getPost(mContext!!, num)}")
         val newPost = postViewModel.getPost(mContext!!, num)
 
         YoYo.with(Techniques.BounceIn)
@@ -165,7 +153,7 @@ class TabLatestFragment : Fragment(), FetchCompleteListener {
             .playOn(binding.cardView)
 
         Glide.with(mContext!!)
-            .load(newPost.gifUrl)
+            .load(newPost!!.gifUrl)
             .fitCenter()
             .placeholder(circularProgressDrawable)
             .into(DrawableImageViewTarget(binding.gifImage))
@@ -174,10 +162,12 @@ class TabLatestFragment : Fragment(), FetchCompleteListener {
     }
 
     override fun fetchComplete() {
-        val newPost = Utils.getPostFromJSON(jsonString)
-        postViewModel.insertData(mContext!!, newPost)
+        val newFivePosts = Utils.getPostsFromJSON(jsonString)
+        newFivePosts.forEach {
+            postViewModel.insertData(mContext!!, it)
+        }
 
-        binding.postText.text = newPost.desc
+        binding.postText.text = newFivePosts[0].desc
 
         val circularProgressDrawable = CircularProgressDrawable(binding.gifImage.context)
         circularProgressDrawable.strokeWidth = 5f
@@ -185,7 +175,7 @@ class TabLatestFragment : Fragment(), FetchCompleteListener {
         circularProgressDrawable.start()
 
         Glide.with(mContext!!)
-            .load(newPost.gifUrl)
+            .load(newFivePosts[0].gifUrl)
             .fitCenter()
             .placeholder(circularProgressDrawable)
             .into(DrawableImageViewTarget(binding.gifImage))
