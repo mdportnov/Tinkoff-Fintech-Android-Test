@@ -28,7 +28,7 @@ import okhttp3.Response
 import java.io.IOException
 
 @SuppressLint("UseCompatLoadingForDrawables")
-class TabLatestFragment : Fragment(), FetchCompleteListener {
+class TabRandomFragment : Fragment(), FetchCompleteListener {
     private var _binding: FragmentTabRandomBinding? = null
     private val binding get() = _binding!!
     var jsonString = ""
@@ -36,7 +36,6 @@ class TabLatestFragment : Fragment(), FetchCompleteListener {
     private lateinit var postViewModel: PostViewModel
 
     private var currentPointer: Int = 0
-    private var currentPageOnAPI = 0
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -126,7 +125,7 @@ class TabLatestFragment : Fragment(), FetchCompleteListener {
 
         val request = OkHttpRequest(client)
 
-        request.GET(Utils.url + "top/${currentPageOnAPI}?json=true", object : Callback {
+        request.GET(Utils.url + "random?json=true", object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 e.printStackTrace()
             }
@@ -134,7 +133,7 @@ class TabLatestFragment : Fragment(), FetchCompleteListener {
             override fun onResponse(call: Call, response: Response) {
                 jsonString = response.body!!.string()
                 activity?.runOnUiThread {
-                    this@TabLatestFragment.fetchComplete()
+                    this@TabRandomFragment.fetchComplete()
                 }
             }
         })

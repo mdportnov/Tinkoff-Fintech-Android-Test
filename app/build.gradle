@@ -75,4 +75,6 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version"
 
+    // - - Animation Library
+    implementation 'com.daimajia.androidanimations:library:2.4@aar'
 }

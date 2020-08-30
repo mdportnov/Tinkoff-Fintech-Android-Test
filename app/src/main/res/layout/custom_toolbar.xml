@@ -20,7 +20,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:text="@string/developers_life"
-        android:textColor="#fff"
+        android:textColor="#333333"
         android:textSize="20sp"
         android:textStyle="bold" />
     </androidx.appcompat.widget.Toolbar>
